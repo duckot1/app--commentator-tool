@@ -5,7 +5,8 @@ import {
   App,
   ProviderWrapper,
   getStore,
-  MSUserHOC
+  MSUserHOC,
+  ms
 } from '@sportabletech/lib--sportable-react'
 import packageJson from '../package.json'
 import { appConfig, initialPath } from './config'
@@ -15,8 +16,8 @@ let env = 'development'
 let local = true
 
 // Check for Jwt token and set user
-let user = localStorage.getItem('user') || '{}'
-user = JSON.parse(user)
+let userString = localStorage.getItem('user') || '{}'
+let user = JSON.parse(userString)
 
 // Check if user has come from verify email
 // If so remove application cache and cookie
@@ -39,13 +40,20 @@ if (env === 'staging') {
   envString = ' (development)'
 }
 
-let initialState = {
-  // version: {
-  //   ui: `${packageJson.version}`
-  // },
-  // user: {
-  //   data: !isVerifyEmailLink ? user : {}
-  // }
+console.log(user)
+
+const initialState = {
+  // ...dummyApiState,
+  ...ms.dummyApiState,
+  authentication: {
+    signedIn: !!user.id,
+    error: null,
+    signingIn: false,
+    forgotPassword: false
+  },
+  user: {
+    data: user
+  }
 }
 
 export const store = getStore(initialState)
@@ -55,8 +63,8 @@ const container = document.getElementById('root')
 const root = createRoot(container!)
 root.render(
   ProviderWrapper(() => {
-    console.log(MSUserHOC(() => <App appConfig={appConfig} landing={initialPath} />))
     const MSApp = MSUserHOC(App)
+    console.log()
     return <MSApp appConfig={appConfig} landing={initialPath} />
   }, store)
 )
